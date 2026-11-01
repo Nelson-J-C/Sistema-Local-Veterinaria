@@ -131,6 +131,31 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - If you have modified any PHP files, you must run `vendor/bin/pint --dirty --format agent` before finalizing changes to ensure your code matches the project's expected style.
 - Do not run `vendor/bin/pint --test --format agent`, simply run `vendor/bin/pint --format agent` to fix any formatting issues.
 
+=== engineering standards ===
+
+# Engineering Standards
+
+## Project-local tooling only
+
+- Never install packages or tools globally (`npm install -g`, `composer global require`, system installers) for this project.
+- Declare PHP dependencies in `composer.json` and JS dependencies in `package.json`. Commit both lock files.
+- Run development tools from `vendor/bin` or `node_modules/.bin`.
+- Do not edit machine-wide configuration (`php.ini`, global environment variables, system services) to make the project work. For a one-off local PHP extension, use `php -d extension=name ...` instead of persisting the change.
+- If a tool truly requires a system-wide install, stop and ask for approval first, then document it in the project plan.
+- The clinic's Ubuntu server is a dedicated project environment; system packages needed there are allowed and must be recorded in the project log.
+
+## Clean code and maintainability
+
+- Follow PSR-12 and Laravel Pint. Run `vendor/bin/pint --dirty --format agent` before finalizing changes.
+- Keep controllers, Filament resources, and Filament pages thin: validation in Form Requests, authorization in Policies, business logic in Actions or Services.
+- Type every parameter and return value. Use descriptive names and avoid magic values; read them from `config/` or the settings table.
+- Eager load relationships, add deliberate indexes, and wrap multi-table writes in transactions.
+- Never call `env()` outside `config/` files.
+- Store money in cents and use the clinic timezone for dates.
+- Add feature tests for business rules and HTTP boundaries.
+- Definition of done: code compiles, Pint passes, tests pass, authorization and validation exist, no obvious N+1, and the project plan is updated.
+- The full standard lives in `sistema-veterinario-plan.md`, section 4.1.
+
 === phpunit/core rules ===
 
 # PHPUnit
