@@ -3,23 +3,50 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+            SettingsSeeder::class,
+            SpeciesSeeder::class,
+            BreedSeeder::class,
+            VaccineSeeder::class,
+            ServiceSeeder::class,
         ]);
+
+        $this->createAdministrator();
+    }
+
+    /**
+     * Create the initial administrator account and assign the admin role.
+     */
+    protected function createAdministrator(): void
+    {
+        $admin = User::query()->firstOrNew(['email' => config('clinic.admin_email')]);
+
+        if (! $admin->exists && blank(config('clinic.admin_password'))) {
+            $this->command?->warn(
+                'No se creó el usuario administrador: defina CLINIC_ADMIN_PASSWORD en el archivo .env.',
+            );
+
+            return;
+        }
+
+        $admin->name = 'Administrador';
+        $admin->active = true;
+
+        if (! $admin->exists) {
+            $admin->password = config('clinic.admin_password');
+        }
+
+        $admin->save();
+        $admin->assignRole('admin');
     }
 }
