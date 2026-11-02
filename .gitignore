@@ -21,8 +21,9 @@
 /public/hot
 /public/js/filament
 /public/storage
-# Manual funcional local: nunca se sube al repositorio
+# Manuales locales: nunca se suben al repositorio
 /Manual-sistema-veterinaria.md
+/Manual-de-usuario.md
 # Caché temporal de PHPStan
 /storage/framework/phpstan
 /storage/*.key

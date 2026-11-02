@@ -154,8 +154,9 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Store money in cents and use the clinic timezone for dates.
 - Add feature tests for business rules and HTTP boundaries.
 - Run `composer analyse` (Larastan/PHPStan) before finalizing a module.
-- Document every implemented module in `Manual-sistema-veterinaria.md` at the project root. This file is gitignored and must never be committed.
-- Definition of done: code compiles, Pint passes, tests pass, static analysis passes, authorization and validation exist, no obvious N+1, the manual is updated, and the project plan is updated.
+- Document every implemented module in `Manual-sistema-veterinaria.md` at the project root. When a module has screens or workflows for clinic staff, also update `Manual-de-usuario.md`. Both files are gitignored and must never be committed.
+- Write the user manual in plain language, organized by task, and mark unimplemented features as pending.
+- Definition of done: code compiles, Pint passes, tests pass, static analysis passes, authorization and validation exist, no obvious N+1, both applicable manuals are updated, and the project plan is updated.
 - The full standard lives in `sistema-veterinario-plan.md`, sections 4.1 and 4.2.
 
 === phpunit/core rules ===
