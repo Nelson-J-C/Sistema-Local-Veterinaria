@@ -12,6 +12,7 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -57,6 +58,38 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->active && ! $this->hasRole('cliente');
+    }
+
+    /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'vet_id');
+    }
+
+    /**
+     * @return HasMany<VetTimeOff, $this>
+     */
+    public function vetTimeOffs(): HasMany
+    {
+        return $this->hasMany(VetTimeOff::class, 'user_id');
+    }
+
+    /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function createdAppointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'created_by');
+    }
+
+    /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function cancelledAppointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'cancelled_by');
     }
 
     /**

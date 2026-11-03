@@ -65,6 +65,32 @@ class ClinicSettingsPageTest extends TestCase
         $this->assertSame(5, Setting::get('reminder_days_before', null, 'appointments'));
     }
 
+    public function test_administrators_can_update_the_clinic_schedule_and_holidays(): void
+    {
+        Livewire::test(ManageClinicSettings::class)
+            ->fillForm([
+                'clinic_hours' => [
+                    ['day' => 'monday', 'enabled' => true, 'open' => '09:00', 'close' => '18:00'],
+                    ['day' => 'sunday', 'enabled' => false, 'open' => '09:00', 'close' => '12:00'],
+                ],
+                'holidays' => [
+                    ['date' => '2026-12-25', 'name' => 'Navidad'],
+                ],
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors()
+            ->assertNotified();
+
+        $hours = Setting::get('clinic_hours', null, 'appointments');
+        $holidays = Setting::get('holidays', null, 'appointments');
+
+        $this->assertTrue($hours['monday']['enabled']);
+        $this->assertSame('09:00', $hours['monday']['open']);
+        $this->assertSame('18:00', $hours['monday']['close']);
+        $this->assertFalse($hours['sunday']['enabled']);
+        $this->assertSame([['date' => '2026-12-25', 'name' => 'Navidad']], $holidays);
+    }
+
     public function test_users_without_the_settings_permission_cannot_open_the_page(): void
     {
         $user = User::factory()->create();

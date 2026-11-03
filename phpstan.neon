@@ -10,6 +10,8 @@ parameters:
 
     level: 5
 
+    parseModelCastsMethod: true
+
     tmpDir: storage/framework/phpstan
 
     excludePaths:

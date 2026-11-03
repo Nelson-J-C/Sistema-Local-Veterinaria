@@ -94,6 +94,14 @@ class Patient extends Model
     }
 
     /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    /**
      * Audit the clinical and identifying fields of the patient.
      */
     public function getActivitylogOptions(): LogOptions

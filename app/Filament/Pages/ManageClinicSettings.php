@@ -5,13 +5,20 @@ namespace App\Filament\Pages;
 use App\Enums\NavigationGroup;
 use App\Models\Setting;
 use BackedEnum;
+use Closure;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Gate;
@@ -60,6 +67,8 @@ class ManageClinicSettings extends Page
             'receipt_prefix' => Setting::get('receipt_prefix', config('clinic.receipt_prefix'), 'billing'),
             'default_duration_minutes' => Setting::get('default_duration_minutes', config('clinic.appointment_duration'), 'appointments'),
             'reminder_days_before' => Setting::get('reminder_days_before', config('clinic.reminder_days_before'), 'appointments'),
+            'clinic_hours' => $this->clinicHoursForForm(),
+            'holidays' => $this->holidaysForForm(),
             'timezone' => Setting::get('timezone', config('clinic.timezone'), 'system'),
         ]);
     }
@@ -140,6 +149,59 @@ class ManageClinicSettings extends Page
                                 ->dehydrated(false)
                                 ->helperText('La zona horaria se define en la configuración del sistema.'),
                         ]),
+                    Section::make('Horario de atención')
+                        ->description('Las citas solo se pueden agendar dentro de estos horarios.')
+                        ->schema([
+                            Repeater::make('clinic_hours')
+                                ->hiddenLabel()
+                                ->schema([
+                                    Select::make('day')
+                                        ->label('Día')
+                                        ->options($this->weekdayOptions())
+                                        ->required()
+                                        ->distinct(),
+                                    Toggle::make('enabled')
+                                        ->label('Atiende'),
+                                    TimePicker::make('open')
+                                        ->label('Apertura')
+                                        ->seconds(false)
+                                        ->required(),
+                                    TimePicker::make('close')
+                                        ->label('Cierre')
+                                        ->seconds(false)
+                                        ->required()
+                                        ->rule(fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                                            if (filled($value) && filled($get('open')) && $value <= $get('open')) {
+                                                $fail('La hora de cierre debe ser posterior a la apertura.');
+                                            }
+                                        }),
+                                ])
+                                ->columns(4)
+                                ->addable(false)
+                                ->deletable(false)
+                                ->reorderable(false)
+                                ->defaultItems(7),
+                        ]),
+                    Section::make('Feriados')
+                        ->description('No se agendan citas en las fechas registradas aquí.')
+                        ->schema([
+                            Repeater::make('holidays')
+                                ->hiddenLabel()
+                                ->schema([
+                                    DatePicker::make('date')
+                                        ->label('Fecha')
+                                        ->required()
+                                        ->distinct()
+                                        ->displayFormat('d/m/Y'),
+                                    TextInput::make('name')
+                                        ->label('Descripción')
+                                        ->required()
+                                        ->maxLength(100),
+                                ])
+                                ->columns(2)
+                                ->addActionLabel('Agregar feriado')
+                                ->defaultItems(0),
+                        ]),
                 ])
                     ->livewireSubmitHandler('save')
                     ->footer([
@@ -172,6 +234,8 @@ class ManageClinicSettings extends Page
             ['billing', 'receipt_prefix', $data['receipt_prefix'] ?? null, 'string'],
             ['appointments', 'default_duration_minutes', $data['default_duration_minutes'] ?? null, 'integer'],
             ['appointments', 'reminder_days_before', $data['reminder_days_before'] ?? null, 'integer'],
+            ['appointments', 'clinic_hours', $this->normalizeClinicHours($data['clinic_hours'] ?? []), 'json'],
+            ['appointments', 'holidays', $this->normalizeHolidays($data['holidays'] ?? []), 'json'],
         ];
 
         foreach ($settings as [$group, $key, $value, $type]) {
@@ -183,5 +247,108 @@ class ManageClinicSettings extends Page
             ->title('Configuración guardada')
             ->body('Los cambios se aplicaron correctamente.')
             ->send();
+    }
+
+    /**
+     * Get the weekday options used by the schedule repeater.
+     *
+     * @return array<string, string>
+     */
+    private function weekdayOptions(): array
+    {
+        return [
+            'monday' => 'Lunes',
+            'tuesday' => 'Martes',
+            'wednesday' => 'Miércoles',
+            'thursday' => 'Jueves',
+            'friday' => 'Viernes',
+            'saturday' => 'Sábado',
+            'sunday' => 'Domingo',
+        ];
+    }
+
+    /**
+     * Convert the stored schedule into repeater rows.
+     *
+     * @return array<int, array{day: string, enabled: bool, open: string, close: string}>
+     */
+    private function clinicHoursForForm(): array
+    {
+        $hours = Setting::get('clinic_hours', config('clinic.hours'), 'appointments');
+
+        if (! is_array($hours)) {
+            $hours = config('clinic.hours', []);
+        }
+
+        $rows = [];
+
+        foreach ($this->weekdayOptions() as $day => $label) {
+            $rows[] = [
+                'day' => $day,
+                'enabled' => (bool) ($hours[$day]['enabled'] ?? false),
+                'open' => (string) ($hours[$day]['open'] ?? '08:00'),
+                'close' => (string) ($hours[$day]['close'] ?? '20:00'),
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Convert the stored holidays into repeater rows.
+     *
+     * @return array<int, array{date: string, name: string}>
+     */
+    private function holidaysForForm(): array
+    {
+        $holidays = Setting::get('holidays', config('clinic.holidays'), 'appointments');
+
+        if (! is_array($holidays)) {
+            return [];
+        }
+
+        return array_values(array_filter($holidays, fn (mixed $holiday): bool => is_array($holiday) && filled($holiday['date'] ?? null)));
+    }
+
+    /**
+     * Convert repeater rows into the stored schedule shape.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<string, array{enabled: bool, open: string, close: string}>
+     */
+    private function normalizeClinicHours(array $rows): array
+    {
+        $hours = [];
+
+        foreach ($rows as $row) {
+            if (blank($row['day'] ?? null)) {
+                continue;
+            }
+
+            $hours[(string) $row['day']] = [
+                'enabled' => (bool) ($row['enabled'] ?? false),
+                'open' => (string) ($row['open'] ?? '08:00'),
+                'close' => (string) ($row['close'] ?? '20:00'),
+            ];
+        }
+
+        return $hours;
+    }
+
+    /**
+     * Convert repeater rows into the stored holiday shape.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, array{date: string, name: string}>
+     */
+    private function normalizeHolidays(array $rows): array
+    {
+        return array_values(array_map(
+            fn (array $row): array => [
+                'date' => (string) $row['date'],
+                'name' => (string) ($row['name'] ?? 'Feriado'),
+            ],
+            array_filter($rows, fn (array $row): bool => filled($row['date'] ?? null)),
+        ));
     }
 }

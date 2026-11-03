@@ -80,6 +80,14 @@ class Owner extends Model
     }
 
     /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    /**
      * Audit only the owner fields that matter for clinic operations.
      */
     public function getActivitylogOptions(): LogOptions

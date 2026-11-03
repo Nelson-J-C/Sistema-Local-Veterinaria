@@ -56,4 +56,26 @@ return [
     'appointment_duration' => (int) env('CLINIC_APPOINTMENT_DURATION', 30),
     'reminder_days_before' => (int) env('CLINIC_REMINDER_DAYS_BEFORE', 3),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Clinic Schedule
+    |--------------------------------------------------------------------------
+    |
+    | Default opening hours and holidays. Runtime values are stored as JSON in
+    | the settings table and can be changed from the administration panel.
+    |
+    */
+
+    'hours' => [
+        'monday' => ['enabled' => true, 'open' => '08:00', 'close' => '20:00'],
+        'tuesday' => ['enabled' => true, 'open' => '08:00', 'close' => '20:00'],
+        'wednesday' => ['enabled' => true, 'open' => '08:00', 'close' => '20:00'],
+        'thursday' => ['enabled' => true, 'open' => '08:00', 'close' => '20:00'],
+        'friday' => ['enabled' => true, 'open' => '08:00', 'close' => '20:00'],
+        'saturday' => ['enabled' => true, 'open' => '08:00', 'close' => '13:00'],
+        'sunday' => ['enabled' => false, 'open' => '08:00', 'close' => '12:00'],
+    ],
+
+    'holidays' => [],
+
 ];

@@ -25,6 +25,8 @@ class SettingsSeeder extends Seeder
             ['billing', 'receipt_prefix', config('clinic.receipt_prefix'), 'string'],
             ['appointments', 'default_duration_minutes', config('clinic.appointment_duration'), 'integer'],
             ['appointments', 'reminder_days_before', config('clinic.reminder_days_before'), 'integer'],
+            ['appointments', 'clinic_hours', config('clinic.hours'), 'json'],
+            ['appointments', 'holidays', config('clinic.holidays'), 'json'],
             ['system', 'timezone', config('clinic.timezone'), 'string'],
         ];
 
