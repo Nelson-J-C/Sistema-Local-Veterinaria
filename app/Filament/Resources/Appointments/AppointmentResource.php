@@ -59,7 +59,7 @@ class AppointmentResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['patient', 'owner', 'vet']);
+            ->with(['patient', 'owner', 'vet', 'consultation']);
     }
 
     public static function getPages(): array

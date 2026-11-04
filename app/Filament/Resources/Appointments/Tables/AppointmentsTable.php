@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Appointments\Tables;
 
 use App\Enums\AppointmentStatus;
 use App\Enums\AppointmentType;
+use App\Filament\Resources\Appointments\Actions\AppointmentActions;
 use App\Filament\Resources\Appointments\AppointmentResource;
+use App\Filament\Resources\Consultations\ConsultationResource;
 use App\Models\Appointment;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -104,6 +106,14 @@ class AppointmentsTable
             ])
             ->recordActions([
                 ViewAction::make(),
+                AppointmentActions::startConsultation(),
+                Action::make('view_consultation')
+                    ->label('Ver consulta')
+                    ->icon(Heroicon::OutlinedClipboardDocumentList)
+                    ->url(fn (Appointment $record): ?string => $record->consultation
+                        ? ConsultationResource::getUrl('view', ['record' => $record->consultation])
+                        : null)
+                    ->visible(fn (Appointment $record): bool => $record->consultation !== null),
                 EditAction::make(),
                 ActionGroup::make([
                     self::confirmAction(),

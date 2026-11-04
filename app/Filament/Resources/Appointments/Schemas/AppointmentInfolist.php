@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Appointments\Schemas;
 
 use App\Enums\AppointmentStatus;
+use App\Filament\Resources\Consultations\ConsultationResource;
 use App\Models\Appointment;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
@@ -45,6 +46,14 @@ class AppointmentInfolist
                         TextEntry::make('notes')
                             ->label('Notas internas')
                             ->placeholder('-')
+                            ->columnSpanFull(),
+                        TextEntry::make('consultation.consulted_at')
+                            ->label('Consulta clínica')
+                            ->dateTime('d/m/Y H:i')
+                            ->placeholder('Sin consulta registrada')
+                            ->url(fn (Appointment $record): ?string => $record->consultation
+                                ? ConsultationResource::getUrl('view', ['record' => $record->consultation])
+                                : null)
                             ->columnSpanFull(),
                     ]),
                 Section::make('Cancelación')

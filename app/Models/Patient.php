@@ -102,6 +102,30 @@ class Patient extends Model
     }
 
     /**
+     * @return HasMany<Consultation, $this>
+     */
+    public function consultations(): HasMany
+    {
+        return $this->hasMany(Consultation::class);
+    }
+
+    /**
+     * @return HasMany<PatientMeasurement, $this>
+     */
+    public function measurements(): HasMany
+    {
+        return $this->hasMany(PatientMeasurement::class);
+    }
+
+    /**
+     * @return HasMany<Attachment, $this>
+     */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(Attachment::class);
+    }
+
+    /**
      * Audit the clinical and identifying fields of the patient.
      */
     public function getActivitylogOptions(): LogOptions
