@@ -9,6 +9,8 @@ use App\Filament\Resources\Patients\Pages\ListPatients;
 use App\Filament\Resources\Patients\Pages\ViewPatient;
 use App\Filament\Resources\Patients\RelationManagers\AlertsRelationManager;
 use App\Filament\Resources\Patients\RelationManagers\ConsultationsRelationManager;
+use App\Filament\Resources\Patients\RelationManagers\DewormingsRelationManager;
+use App\Filament\Resources\Patients\RelationManagers\VaccinationsRelationManager;
 use App\Filament\Resources\Patients\Schemas\PatientForm;
 use App\Filament\Resources\Patients\Schemas\PatientInfolist;
 use App\Filament\Resources\Patients\Tables\PatientsTable;
@@ -73,6 +75,8 @@ class PatientResource extends Resource
         return [
             AlertsRelationManager::class,
             ConsultationsRelationManager::class,
+            VaccinationsRelationManager::class,
+            DewormingsRelationManager::class,
         ];
     }
 

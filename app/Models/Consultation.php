@@ -131,6 +131,22 @@ class Consultation extends Model
     }
 
     /**
+     * @return HasMany<Vaccination, $this>
+     */
+    public function vaccinations(): HasMany
+    {
+        return $this->hasMany(Vaccination::class);
+    }
+
+    /**
+     * @return HasMany<Deworming, $this>
+     */
+    public function dewormings(): HasMany
+    {
+        return $this->hasMany(Deworming::class);
+    }
+
+    /**
      * Determine whether the consultation is still editable.
      */
     public function isDraft(): bool

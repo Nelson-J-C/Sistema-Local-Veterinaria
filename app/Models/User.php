@@ -125,6 +125,22 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
+     * @return HasMany<Vaccination, $this>
+     */
+    public function vaccinations(): HasMany
+    {
+        return $this->hasMany(Vaccination::class, 'vet_id');
+    }
+
+    /**
+     * @return HasMany<Deworming, $this>
+     */
+    public function dewormings(): HasMany
+    {
+        return $this->hasMany(Deworming::class, 'vet_id');
+    }
+
+    /**
      * Define which user fields are audited, excluding credentials and MFA secrets.
      */
     public function getActivitylogOptions(): LogOptions

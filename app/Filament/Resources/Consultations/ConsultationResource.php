@@ -9,9 +9,11 @@ use App\Filament\Resources\Consultations\Pages\ListConsultations;
 use App\Filament\Resources\Consultations\Pages\ViewConsultation;
 use App\Filament\Resources\Consultations\RelationManagers\AddendaRelationManager;
 use App\Filament\Resources\Consultations\RelationManagers\AttachmentsRelationManager;
+use App\Filament\Resources\Consultations\RelationManagers\DewormingsRelationManager;
 use App\Filament\Resources\Consultations\RelationManagers\DiagnosesRelationManager;
 use App\Filament\Resources\Consultations\RelationManagers\MeasurementsRelationManager;
 use App\Filament\Resources\Consultations\RelationManagers\PrescriptionsRelationManager;
+use App\Filament\Resources\Consultations\RelationManagers\VaccinationsRelationManager;
 use App\Filament\Resources\Consultations\Schemas\ConsultationForm;
 use App\Filament\Resources\Consultations\Schemas\ConsultationInfolist;
 use App\Filament\Resources\Consultations\Tables\ConsultationsTable;
@@ -77,6 +79,8 @@ class ConsultationResource extends Resource
             MeasurementsRelationManager::class,
             DiagnosesRelationManager::class,
             PrescriptionsRelationManager::class,
+            VaccinationsRelationManager::class,
+            DewormingsRelationManager::class,
             AddendaRelationManager::class,
             AttachmentsRelationManager::class,
         ];

@@ -126,6 +126,30 @@ class Patient extends Model
     }
 
     /**
+     * @return HasMany<Vaccination, $this>
+     */
+    public function vaccinations(): HasMany
+    {
+        return $this->hasMany(Vaccination::class);
+    }
+
+    /**
+     * @return HasMany<Deworming, $this>
+     */
+    public function dewormings(): HasMany
+    {
+        return $this->hasMany(Deworming::class);
+    }
+
+    /**
+     * @return HasMany<Reminder, $this>
+     */
+    public function reminders(): HasMany
+    {
+        return $this->hasMany(Reminder::class);
+    }
+
+    /**
      * Audit the clinical and identifying fields of the patient.
      */
     public function getActivitylogOptions(): LogOptions
