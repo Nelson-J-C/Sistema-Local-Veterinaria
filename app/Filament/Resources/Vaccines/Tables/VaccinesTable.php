@@ -64,7 +64,7 @@ class VaccinesTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()
-                    ->visible(fn (Vaccine $record): bool => ! $record->vaccinations()->exists()),
+                    ->visible(fn (Vaccine $record): bool => $record->vaccinations_count === 0),
             ])
             ->emptyStateHeading('Sin vacunas en el catálogo')
             ->emptyStateDescription('Agregue las vacunas que aplica la clínica.');

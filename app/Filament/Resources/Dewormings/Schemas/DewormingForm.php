@@ -73,6 +73,13 @@ class DewormingForm
                             ->required()
                             ->maxLength(150)
                             ->placeholder('Ej. Albendazol'),
+                        Select::make('product_id')
+                            ->label('Producto del inventario')
+                            ->relationship('product', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Sin vincular')
+                            ->helperText('Opcional. Vincula la aplicación con el catálogo de productos.'),
                         TextInput::make('dose')
                             ->label('Dosis aplicada')
                             ->maxLength(100)

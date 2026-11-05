@@ -3,6 +3,10 @@
 namespace App\Filament\Resources\Consultations\RelationManagers;
 
 use App\Enums\MedicationRoute;
+use App\Enums\StockMovementType;
+use App\Models\Prescription;
+use App\Services\InventoryService;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -12,13 +16,17 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\ValidationException;
 
 class PrescriptionsRelationManager extends RelationManager
 {
@@ -42,6 +50,14 @@ class PrescriptionsRelationManager extends RelationManager
                             ->label('Presentación')
                             ->maxLength(100)
                             ->placeholder('Ej. Jarabe 120 ml'),
+                        Select::make('product_id')
+                            ->label('Producto del inventario')
+                            ->relationship('product', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Sin vincular')
+                            ->helperText('Opcional. Permite descontar stock al dispensar.')
+                            ->columnSpanFull(),
                         TextInput::make('dose')
                             ->label('Dosis')
                             ->required()
@@ -82,6 +98,7 @@ class PrescriptionsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('medication_name')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('product'))
             ->columns([
                 TextColumn::make('medication_name')
                     ->label('Medicamento')
@@ -105,6 +122,10 @@ class PrescriptionsRelationManager extends RelationManager
                 TextColumn::make('quantity')
                     ->label('Cantidad')
                     ->placeholder('-'),
+                TextColumn::make('product.name')
+                    ->label('Inventario')
+                    ->placeholder('Sin vincular')
+                    ->toggleable(),
                 IconColumn::make('dispensed')
                     ->label('Dispensado')
                     ->boolean(),
@@ -125,6 +146,57 @@ class PrescriptionsRelationManager extends RelationManager
                     ->label('Agregar medicamento'),
             ])
             ->recordActions([
+                Action::make('dispense')
+                    ->label('Dispensar')
+                    ->icon(Heroicon::OutlinedCube)
+                    ->color('success')
+                    ->visible(fn (Prescription $record): bool => ! $record->dispensed && $record->product_id !== null)
+                    ->requiresConfirmation()
+                    ->modalHeading('Descontar stock')
+                    ->modalDescription('Se descontará la cantidad recetada usando FEFO (primero vence, primero sale).')
+                    ->modalSubmitActionLabel('Dispensar')
+                    ->action(function (Prescription $record): void {
+                        if ($record->product === null || (float) $record->quantity <= 0) {
+                            Notification::make()
+                                ->danger()
+                                ->title('No se puede dispensar')
+                                ->body('La receta debe tener un producto vinculado y una cantidad mayor a cero.')
+                                ->send();
+
+                            return;
+                        }
+
+                        try {
+                            app(InventoryService::class)->consume(
+                                product: $record->product,
+                                quantity: (float) $record->quantity,
+                                type: StockMovementType::Sale,
+                                userId: (int) auth()->id(),
+                                reference: $record,
+                                notes: 'Dispensado desde receta',
+                            );
+                        } catch (ValidationException $exception) {
+                            Notification::make()
+                                ->danger()
+                                ->title('No se pudo dispensar')
+                                ->body(collect($exception->errors())->flatten()->first())
+                                ->send();
+
+                            return;
+                        }
+
+                        $record->update([
+                            'dispensed' => true,
+                            'dispensed_at' => now(),
+                            'dispensed_by' => auth()->id(),
+                        ]);
+
+                        Notification::make()
+                            ->success()
+                            ->title('Medicamento dispensado')
+                            ->body('El stock se descontó del lote más próximo a vencer.')
+                            ->send();
+                    }),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

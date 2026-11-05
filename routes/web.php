@@ -4,9 +4,7 @@ use App\Http\Controllers\AttachmentDownloadController;
 use App\Http\Controllers\VaccineCardController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/admin');
 
 Route::get('/attachments/{attachment}/download', AttachmentDownloadController::class)
     ->middleware('auth')
