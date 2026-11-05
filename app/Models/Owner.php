@@ -80,6 +80,14 @@ class Owner extends Model
     }
 
     /**
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * @return HasMany<Appointment, $this>
      */
     public function appointments(): HasMany

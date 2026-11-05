@@ -150,6 +150,14 @@ class Patient extends Model
     }
 
     /**
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * Audit the clinical and identifying fields of the patient.
      */
     public function getActivitylogOptions(): LogOptions

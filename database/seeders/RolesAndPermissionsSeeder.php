@@ -30,6 +30,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'suppliers' => ['view', 'create', 'update', 'delete'],
             'purchases' => ['view', 'create'],
             'inventory' => ['view', 'manage'],
+            'services' => ['view', 'create', 'update', 'delete'],
             'invoices' => ['view', 'create', 'void'],
             'payments' => ['view', 'create'],
             'cash' => ['view', 'open', 'close'],
