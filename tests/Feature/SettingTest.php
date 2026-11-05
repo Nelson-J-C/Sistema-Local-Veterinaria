@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class SettingTest extends TestCase
@@ -44,5 +45,19 @@ class SettingTest extends TestCase
 
         $this->assertSame(13.0, Setting::get('tax_rate', null, 'billing'));
         $this->assertSame(10.0, Setting::get('tax_rate', null, 'other'));
+    }
+
+    public function test_cached_settings_store_plain_values_instead_of_models(): void
+    {
+        Setting::set('clinic_name', 'Clínica San Roque');
+
+        $this->assertSame('Clínica San Roque', Setting::get('clinic_name'));
+
+        $cached = Cache::get('settings:v2:general:clinic_name');
+
+        $this->assertIsArray($cached);
+        $this->assertTrue($cached['found']);
+        $this->assertSame('Clínica San Roque', $cached['value']);
+        $this->assertNotInstanceOf(Setting::class, $cached['value']);
     }
 }

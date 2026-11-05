@@ -23,15 +23,35 @@ class Setting extends Model
      */
     public static function get(string $key, mixed $default = null, string $group = 'general'): mixed
     {
-        $setting = Cache::rememberForever(
-            self::cacheKey($group, $key),
-            fn (): ?self => self::query()
-                ->where('group', $group)
-                ->where('key', $key)
-                ->first(),
-        );
+        $cached = self::cachedValue($group, $key);
 
-        return $setting?->typedValue() ?? $default;
+        return $cached['found'] ? $cached['value'] : $default;
+    }
+
+    /**
+     * Read the setting from the cache, storing only plain values.
+     *
+     * Caching the Eloquent model itself breaks when the class cannot be
+     * autoloaded while the cache entry is being unserialized.
+     *
+     * @return array{found: bool, value: mixed}
+     */
+    private static function cachedValue(string $group, string $key): array
+    {
+        return Cache::rememberForever(
+            self::cacheKey($group, $key),
+            function () use ($group, $key): array {
+                $setting = self::query()
+                    ->where('group', $group)
+                    ->where('key', $key)
+                    ->first();
+
+                return [
+                    'found' => $setting instanceof self,
+                    'value' => $setting?->typedValue(),
+                ];
+            },
+        );
     }
 
     /**
@@ -80,7 +100,7 @@ class Setting extends Model
      */
     protected static function cacheKey(string $group, string $key): string
     {
-        return "settings:{$group}:{$key}";
+        return "settings:v2:{$group}:{$key}";
     }
 
     /**
