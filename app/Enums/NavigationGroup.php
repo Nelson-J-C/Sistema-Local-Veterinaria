@@ -10,6 +10,7 @@ enum NavigationGroup: string implements HasLabel
     case Clinical = 'Clínica';
     case Inventory = 'Inventario';
     case Billing = 'Facturación';
+    case Reports = 'Reportes';
     case Configuration = 'Configuración';
     case Audit = 'Auditoría';
 
