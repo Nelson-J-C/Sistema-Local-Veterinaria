@@ -1,0 +1,27 @@
+[Unit]
+Description=Sistema Veterinario - respaldo nocturno a disco USB
+Documentation=file:///var/www/veterinaria/Manual-sistema-veterinaria.md
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/veterinaria
+Environment=APP_DIR=/var/www/veterinaria
+Environment=BACKUP_MOUNT=/mnt/veterinaria-backup
+Environment=BACKUP_PASSPHRASE_FILE=/etc/veterinaria/backup.passphrase
+Environment=BACKUP_MIN_FREE_MB=2048
+ExecStart=/usr/bin/bash /var/www/veterinaria/deploy/scripts/backup-usb.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/www/veterinaria/storage /mnt/veterinaria-backup
+
+[Install]
+WantedBy=multi-user.target

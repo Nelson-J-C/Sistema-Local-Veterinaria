@@ -1,0 +1,15 @@
+[Unit]
+Description=Sistema Veterinario - ejecuta el scheduler de Laravel
+After=network.target mariadb.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/veterinaria
+ExecStart=/usr/bin/php artisan schedule:run
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/www/veterinaria/storage

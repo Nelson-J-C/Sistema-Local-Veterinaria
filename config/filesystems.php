@@ -60,6 +60,12 @@ return [
             'report' => false,
         ],
 
+        'backups_usb' => [
+            'driver' => 'local',
+            'root' => env('BACKUP_USB_PATH', '/mnt/veterinaria-backup'),
+            'throw' => true,
+        ],
+
     ],
 
     /*

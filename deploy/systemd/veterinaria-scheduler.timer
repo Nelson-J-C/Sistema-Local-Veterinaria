@@ -1,0 +1,10 @@
+[Unit]
+Description=Ejecuta el scheduler de Laravel cada minuto
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Persistent=true
+Unit=veterinaria-scheduler.service
+
+[Install]
+WantedBy=timers.target

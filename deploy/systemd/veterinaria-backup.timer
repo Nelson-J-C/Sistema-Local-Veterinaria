@@ -1,0 +1,11 @@
+[Unit]
+Description=Ejecuta el respaldo diario del Sistema Veterinario
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=veterinaria-backup.service
+
+[Install]
+WantedBy=timers.target
